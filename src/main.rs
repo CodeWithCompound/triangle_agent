@@ -1,4 +1,4 @@
-use macroquad::prelude::*;
+use macroquad::{miniquad::window::quit, prelude::{*}};
 
 #[macroquad::main("i have no clue what im doing help")]
 async fn main() {
@@ -67,33 +67,44 @@ let mut grid: Vec<Vec<Tile>> = vec![vec![Tile::Empty; GRID_W]; GRID_H];
         let mouse_pos = Vec2::from(mouse_position());
 
         // if position is not mouse then change that 
-        let mut direction: Vec2 = mouse_pos - cobber_pos;
-        let distance = direction.length();
+let mut direction: Vec2 = mouse_pos - cobber_pos;
+let distance = direction.length();
 
-        if distance > 0.0 {
-            direction /= distance;
+// collision radius (triangle radius)
+let hit_radius = 10.0;
 
-            let speed = 100.0 + distance / 5.0;
-            let dt = get_frame_time();
+if distance <= hit_radius {
+    // you're dead
+    println!("");
+    println!("-----> you died because the triangle touched you!");
+    println!("-----> hint: don't touch the triangle :)");
+    println!("");
+    quit();
+} else if distance > 0.0 {
+    direction /= distance;
 
-            let movement = direction * speed * dt;
-            let new_pos = cobber_pos + movement;
+    let speed = 100.0 + distance / 5.0;
+    let dt = get_frame_time();
 
-            let nx = (new_pos.x / spacing).floor() as i32;
-            let ny = (new_pos.y / spacing).floor() as i32;
+    let movement = direction * speed * dt;
+    let new_pos = cobber_pos + movement;
 
-            let mut blocked = false;
+    let nx = (new_pos.x / spacing).floor() as i32;
+    let ny = (new_pos.y / spacing).floor() as i32;
 
-            if nx >= 0 && nx < GRID_W as i32 && ny >= 0 && ny < GRID_H as i32 {
-                if let Tile::Wall = grid[ny as usize][nx as usize] {
-                    blocked = true;
-                }
-            }
+    let mut blocked = false;
 
-            if !blocked {
-                cobber_pos = new_pos;
-            }
+    if nx >= 0 && nx < GRID_W as i32 && ny >= 0 && ny < GRID_H as i32 {
+        if let Tile::Wall = grid[ny as usize][nx as usize] {
+            blocked = true;
         }
+    }
+
+    if !blocked {
+        cobber_pos = new_pos;
+    }
+}
+
 
         // here we draw the triangle
         draw_poly(cobber_pos.x, cobber_pos.y, 3, 20.0, poly_r, BLACK);
